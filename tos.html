@@ -3,148 +3,373 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>合約暨服務條款 | QUASI ZER0 STUDIO</title>
+<title>委託協議與授權條款 | QUASI ZER0 STUDIO</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&family=Poppins:wght@600;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Poppins:wght@600;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
+/* --- 頂級視覺核心 --- */
 body {
     background-color: #050505;
     color: #e2e8f0;
     font-family: 'Noto Sans TC', sans-serif;
-    background-image: radial-gradient(circle at 50% 0%, #1e1b4b 0%, #050505 70%);
-    background-attachment: fixed;
+    overflow-x: hidden;
+    line-height: 1.8;
 }
-h1, h2, h3, .brand-font {
-    font-family: 'Poppins', 'Noto Sans TC', sans-serif;
+
+/* 3D 穿梭畫布 */
+#particle-canvas {
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    z-index: -3; pointer-events: none;
 }
+
+/* 背景網格 */
+.bg-grid {
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    background-image: linear-gradient(rgba(56, 189, 248, 0.03) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(56, 189, 248, 0.03) 1px, transparent 1px);
+    background-size: 50px 50px; z-index: -2; pointer-events: none;
+    mask-image: radial-gradient(ellipse at center, black 10%, transparent 80%);
+}
+
+/* 標題故障特效 */
+h1, h2, h3, .brand-font { font-family: 'Poppins', 'Noto Sans TC', sans-serif; }
+.glitch-wrapper { position: relative; display: inline-block; }
 .title-neon {
     background: linear-gradient(to right, #00f2fe, #4facfe, #818cf8);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    display: inline-block;
+    font-weight: 900; position: relative;
 }
-.neon-card {
-    background-color: rgba(17, 24, 39, 0.7);
-    backdrop-filter: blur(10px);
-    border-radius: 16px;
-    padding: 2.5rem;
-    margin-bottom: 2rem;
-    border: 1px solid #1f2937;
-    position: relative;
-    overflow: hidden;
+.title-neon::before, .title-neon::after {
+    content: attr(data-text); position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: inherit; -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    opacity: 0.5; pointer-events: none;
 }
-.neon-card::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 4px;
-    background: linear-gradient(to bottom, #00f2fe, #4facfe, #818cf8);
+.title-neon::before { left: 2px; text-shadow: -1px 0 #ff00c1; clip: rect(24px, 550px, 90px, 0); animation: glitch 3s infinite linear alternate-reverse; }
+.title-neon::after { left: -2px; text-shadow: -1px 0 #00fff9; clip: rect(85px, 550px, 140px, 0); animation: glitch 2s infinite linear alternate-reverse; }
+@keyframes glitch {
+    0% { clip: rect(10px, 9999px, 80px, 0); }
+    100% { clip: rect(50px, 9999px, 100px, 0); }
 }
-.contract-section {
-    margin-bottom: 2rem;
+
+/* 3D 聚光燈卡片 */
+.contract-card {
+    background: linear-gradient(145deg, rgba(30, 41, 59, 0.6), rgba(15, 23, 42, 0.8));
+    backdrop-filter: blur(20px); border-radius: 16px; padding: 2.2rem;
+    margin-bottom: 2rem; border: 1px solid rgba(255, 255, 255, 0.08);
+    position: relative; overflow: hidden; transition: all 0.4s ease;
+    --mouse-x: 50%; --mouse-y: 50%;
 }
-.contract-section h3 {
-    color: #38bdf8;
-    font-size: 1.25rem;
-    font-weight: 700;
-    margin-bottom: 1rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+.contract-card .spotlight {
+    position: absolute; inset: 0; z-index: 0; pointer-events: none;
+    background: radial-gradient(600px circle at var(--mouse-x) var(--mouse-y), rgba(56, 189, 248, 0.1), transparent 40%);
+    opacity: 0; transition: opacity 0.3s ease;
 }
-.contract-section ul {
-    list-style-type: disc;
-    padding-left: 1.5rem;
-    color: #cbd5e1;
-    line-height: 1.8;
+.contract-card:hover .spotlight { opacity: 1; }
+.contract-card:hover { border-color: rgba(56, 189, 248, 0.4); box-shadow: 0 15px 30px -10px rgba(0,0,0,0.6); }
+
+/* 方案卡片視覺強化 */
+.tier-card {
+    border-radius: 12px; padding: 1.5rem; border: 1px solid rgba(255, 255, 255, 0.05);
+    background: rgba(0, 0, 0, 0.3); transition: all 0.3s ease;
 }
-.contract-section li {
-    margin-bottom: 0.5rem;
+.tier-s { border-left: 4px solid #38bdf8; }
+.tier-a { border-left: 4px solid #818cf8; background: linear-gradient(145deg, rgba(129, 140, 248, 0.08), transparent); }
+.tier-b { border-left: 4px solid #10b981; background: linear-gradient(145deg, rgba(16, 185, 129, 0.08), transparent); }
+
+/* 磁吸按鈕 */
+.magnetic { transition: transform 0.2s cubic-bezier(0.23, 1, 0.32, 1); }
+
+/* 簽署終端 */
+.agreement-terminal {
+    background: rgba(10, 15, 25, 0.95); border: 1px solid rgba(56, 189, 248, 0.3);
+    border-radius: 12px; position: relative; overflow: hidden; max-width: 100%;
+    box-shadow: 0 40px 80px -20px rgba(0,0,0,0.9);
 }
-.highlight-box {
-    background-color: rgba(56, 189, 248, 0.1);
-    border: 1px dashed #38bdf8;
-    border-radius: 8px;
-    padding: 1.5rem;
-    margin-top: 2rem;
+.terminal-header {
+    background: rgba(56, 189, 248, 0.15); padding: 10px 15px; border-bottom: 1px solid rgba(56, 189, 248, 0.2);
+    display: flex; justify-content: space-between; font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; color: #38bdf8;
 }
+.terminal-body { padding: 3.5rem 1.5rem; position: relative; cursor: pointer; }
+.copy-content { font-family: 'JetBrains Mono', 'Noto Sans TC', monospace; font-size: 1.05rem; color: #fff; text-align: center; font-weight: 500; }
+
+#copy-toast {
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.9);
+    background: #38bdf8; color: #000; padding: 12px 24px; border-radius: 50px; font-weight: 900; z-index: 10000; opacity: 0; transition: all 0.4s ease;
+}
+#copy-toast.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 </style>
 </head>
 <body class="p-6 md:p-12 max-w-3xl mx-auto selection:bg-sky-500 selection:text-white">
 
-<header class="mb-12 mt-8 text-center">
-    <div class="brand-font text-sm text-sky-400 tracking-widest mb-2">QUASI ZER0 STUDIO</div>
-    <h1 class="text-3xl md:text-4xl font-black mb-4 title-neon tracking-tight">委託合約暨服務條款</h1>
-    <p class="text-slate-400 text-sm font-light uppercase tracking-widest">Terms of Service & Commission Agreement</p>
+<canvas id="particle-canvas"></canvas>
+<div class="bg-grid"></div>
+
+<header class="mb-16 mt-4 flex flex-col md:flex-row justify-between items-end border-b border-white/10 pb-8 relative z-10">
+    <div class="text-left mb-6 md:mb-0 w-full md:w-auto">
+        <div class="brand-font text-2xl font-black tracking-tighter text-white mb-1">QUASI ZER0 STUDIO</div>
+        <div class="font-mono text-[10px] tracking-[0.3em] text-sky-500 uppercase">音樂製作委託協議規範</div>
+    </div>
+    <div class="text-left md:text-right w-full md:w-auto">
+        <div class="text-[10px] font-mono text-slate-500 uppercase mb-1">首席製作人 Lead Producer</div>
+        <div class="brand-font text-lg font-bold text-slate-200">Wsido Xrtp ECHO</div>
+    </div>
 </header>
 
-<main class="neon-card">
-    <div class="contract-section border-b border-slate-700/50 pb-6">
-        <h3>✦ 一、 委託基本資訊</h3>
-        <ul>
-            <li><strong class="text-white">委託方 (甲方)：</strong> 於 Discord 私訊確認之委託人</li>
-            <li><strong class="text-white">創作者 (乙方)：</strong> QUASI ZER0 STUDIO</li>
-            <li><strong class="text-white">專案內容與報價：</strong> 依雙方於 Discord 最終確認之對話紀錄為準。</li>
-            <li><strong class="text-white">預計交稿日：</strong> 乙方確認收取訂金後，依排定檔期內交付初稿。</li>
-        </ul>
+<div class="mb-16 text-center">
+    <div class="glitch-wrapper">
+        <h1 class="text-3xl md:text-5xl font-black title-neon tracking-tighter" data-text="專業音樂製作委託協議">專業音樂製作委託協議</h1>
     </div>
-
-    <div class="contract-section border-b border-slate-700/50 pb-6">
-        <h3>✦ 二、 製作與修改流程</h3>
-        <ul>
-            <li><strong class="text-white">初稿交付：</strong> 乙方將提供帶有「防盜版浮水印」之完整高音質初稿供甲方驗收。</li>
-            <li><strong class="text-white">修改定義與權限：</strong>
-                <ul class="mt-2 mb-2">
-                    <li><span class="text-sky-300 font-bold">【細節微調】(提供 2 次免費)：</span>整體風格與需求偏差不大，僅針對特定樂器音量、混音平衡、段落長短等細節進行局部修飾。</li>
-                    <li><span class="text-sky-300 font-bold">【整曲重製】(提供 1 次免費)：</span>交付之初稿與原定曲風或核心氛圍完全不符（例如：指定抒情卻做成搖滾），需全面重新創作。</li>
-                </ul>
-            </li>
-            <li>超過上述次數，乙方將視修改幅度，單次酌收對應之修改費。</li>
-        </ul>
-    </div>
-
-    <div class="contract-section border-b border-slate-700/50 pb-6">
-        <h3>✦ 三、 付款方式與退款政策</h3>
-        <ul>
-            <li><strong class="text-white">訂金 (50%)：</strong> 本合約確立後，甲方需先支付總額 50% 作為訂金。確認收款後即正式排程製作。<span class="text-red-400 font-bold">（註：開始製作後，訂金恕不退還）</span></li>
-            <li><strong class="text-white">尾款 (50%)：</strong> 甲方試聽浮水印初稿並確認「驗收通過」後，需支付剩餘 50% 尾款。</li>
-            <li><strong class="text-white">交付原檔：</strong> 乙方確認收到尾款後，將於 24 小時內交付無浮水印之最終 48kHz/24bit Wav 原檔。</li>
-        </ul>
-    </div>
-
-    <div class="contract-section border-b border-slate-700/50 pb-6">
-        <h3>✦ 四、 版權與授權範圍</h3>
-        <ul>
-            <li><strong class="text-white">版權歸屬：</strong> 本曲目之「著作人格權」與「著作財產權」歸乙方所有。</li>
-            <li><strong class="text-white">授權範圍：</strong> 甲方擁有本曲目之「永久個人非商業及一般實況收益（含 YouTube 廣告、直播贊助）使用權」。若需數位發行或實體販售，需另行商議買斷授權。</li>
-            <li><strong class="text-white">署名規範：</strong> 甲方於公開平台使用本曲目時，需於資訊欄或顯眼處標註 <strong class="text-sky-300">Music by QUASI ZER0 STUDIO</strong>。</li>
-            <li>乙方保留將本曲目（或部分片段）作為作品集展示於個人網站、YouTube 等平台之權利。</li>
-        </ul>
-    </div>
-
-    <div class="contract-section">
-        <h3>✦ 五、 AI 輔助創作聲明</h3>
-        <p class="text-slate-300 leading-relaxed text-sm">
-            為提升製作效率與豐富音樂層次，本工作室於創作流程中，會視專案需求適度結合 AI 技術（如靈感發想、部分音效生成等）作為輔助工具。所有的核心編排、混音與最終品質把關皆由人工親自完成。甲方同意此條款即代表理解並接受上述創作方式。
-        </p>
-    </div>
-
-    <div class="highlight-box text-center">
-        <h4 class="text-white font-bold mb-3">簽署與生效方式</h4>
-        <p class="text-slate-400 text-sm mb-4">請確認上述條款，若無異議，請複製下方文字並於 Discord 回傳給工作室：</p>
-        <div class="bg-slate-950 p-3 rounded border border-slate-800 text-sky-300 font-mono text-sm select-all cursor-pointer hover:border-sky-400 transition">
-            我已確認報價，並同意 QUASI ZER0 STUDIO 委託合約暨服務條款。
-        </div>
-    </div>
-</main>
-
-<div class="text-center pb-12">
-    <a href="index.html" class="inline-block text-slate-500 hover:text-sky-400 transition text-sm font-bold tracking-widest">&larr; 返回主頁 (RETURN TO HOME)</a>
+    <p class="text-slate-500 text-[10px] font-mono mt-4 opacity-60">文件序號：QZ-2026-STRICT-V7_FINAL</p>
 </div>
 
+<main class="relative z-10">
+    <section class="contract-card tilt-effect">
+        <div class="spotlight"></div>
+        <h2 class="text-sky-400 font-bold text-xl mb-6 flex items-center gap-3">
+            <span class="opacity-20 text-4xl font-black">01</span> 專案成立與排單規範
+        </h2>
+        <div class="text-base text-slate-200">
+            <p class="mb-4">● <strong class="text-white">排單機制：</strong><br>訂金支付後，專案正式進入製作排程。<br>乙方將嚴格依照「訂金付款順序」安排製作優先順序，以確保公平性。</p>
+            <p class="mb-4">● <strong class="text-white">合約成立：</strong><br>委託方支付訂金並回傳本協議確認訊息後，合約即刻生效，雙方應誠信履行規範。</p>
+            <p class="mb-4">● <strong class="text-white">溝通紀錄：</strong><br>所有製作需求與報價，均以 Discord (quasi_zer0) 或 Email 文字紀錄為唯一憑證。</p>
+            
+            <div class="bg-red-500/10 border border-red-500/20 p-5 rounded-xl mt-8">
+                <strong class="text-red-400 block mb-2 text-lg italic">⚠️ 失聯與棄單處理：</strong>
+                <p class="text-sm text-slate-300">
+                    製作期間若甲方無故失聯、且未事先告知長達 14 個日曆天。<br>
+                    工作室有權單方面終止合約。<br>
+                    此情況下甲方已支付之訂金恕不退還，乙方亦不交付任何階段性成果。
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <section class="contract-card tilt-effect">
+        <div class="spotlight"></div>
+        <h2 class="text-sky-400 font-bold text-xl mb-6 flex items-center gap-3">
+            <span class="opacity-20 text-4xl font-black">02</span> 修改機制與時效規範
+        </h2>
+        <div class="space-y-6 text-slate-200 text-base">
+            <p class="bg-sky-500/5 p-4 rounded-lg border border-sky-500/20 text-sm">
+                <strong class="text-sky-400 block mb-1">🕒 修改時效聲明：</strong><br>
+                甲方收到初稿後，須於 <span class="text-white font-bold underline">7 個日曆天</span> 內提出修改需求。<br>
+                逾期未回覆者，視同該階段驗收通過，後續不得要求免費修改。
+            </p>
+            
+            <div class="grid gap-4">
+                <div class="bg-slate-800/40 p-4 rounded-lg border border-slate-700">
+                    <strong class="text-sky-300 block mb-1 font-black italic text-lg">細節微調 (2 次)</strong>
+                    <span class="text-sm text-slate-400">定義：針對特定樂器音量平衡、個別音色替換或 5 秒內之結構增減。</span>
+                </div>
+                <div class="bg-slate-800/40 p-4 rounded-lg border border-slate-700">
+                    <strong class="text-sky-300 block mb-1 font-black italic text-lg">整曲重製 (1 次)</strong>
+                    <span class="text-sm text-slate-400">定義：僅適用於初稿與前期確認之參考曲風 / BPM / 情緒明顯不符時提供。</span>
+                </div>
+            </div>
+            <ul class="text-sm space-y-4 mt-6 text-slate-300">
+                <li>● <strong class="text-white">超額費用：</strong><br>超出上述次數之增修，每項加收總報價 <strong class="text-sky-400">10%</strong>。</li>
+                <li>● <strong class="text-white">需求變更：</strong><br>製作中途要求更換曲風或推翻大綱，將依進度加收總報價 <strong class="text-sky-400">30% - 50%</strong>。</li>
+            </ul>
+        </div>
+    </section>
+
+    <section class="contract-card tilt-effect">
+        <div class="spotlight"></div>
+        <h2 class="text-sky-400 font-bold text-xl mb-6 flex items-center gap-3">
+            <span class="opacity-20 text-4xl font-black">03</span> 費用支付與雙向保障
+        </h2>
+        <ul class="space-y-6 text-base text-slate-200">
+            <li>● <strong class="text-white">兩階段收費：</strong><br>採訂金 50%（開工）及尾款 50%（驗收通過）制度。</li>
+            <li class="bg-sky-500/5 border border-sky-500/20 p-5 rounded-xl">
+                <strong class="text-sky-400 block mb-2">🤝 專業責任與退款：</strong>
+                <p class="text-sm text-slate-300">
+                    1. 專案啟動後，若甲方因個人因素中途取消，已付訂金恕不退還。<br>
+                    2. 若因乙方因素導致無法按時交稿，乙方承諾<span class="text-white font-bold underline">全額退還已支付之訂金</span>。
+                </p>
+            </li>
+            <li>● <strong class="text-white">交付規範：</strong><br>確認收到尾款後，交付正式授權之 <strong class="text-white underline">48kHz/24bit Wav</strong> 母帶。<br>
+                <span class="text-xs text-slate-500 italic">※ 分軌 (Stems) 檔案之購買與加購授權，請視專案需求另行洽談。</span>
+            </li>
+        </ul>
+    </section>
+
+    <section class="contract-card tilt-effect">
+        <div class="spotlight"></div>
+        <h2 class="text-sky-400 font-bold text-xl mb-6 flex items-center gap-3">
+            <span class="opacity-20 text-4xl font-black">04</span> 版權歸屬與授權範圍
+        </h2>
+        <p class="text-sm text-red-400/80 mb-6 ml-2 italic">● 限制條款：除 PLAN B 外，甲方嚴禁將作品轉售、再授權或轉讓予任何第三方。</p>
+        
+        <div class="space-y-4">
+            <div class="tier-card tier-s">
+                <div class="flex items-center gap-2 mb-3">
+                    <span class="px-2 py-0.5 bg-sky-500/20 text-sky-400 rounded text-[10px] font-black border border-sky-500/30">PLAN S</span>
+                    <h3 class="text-lg font-black">個人內容創作授權 (預設)</h3>
+                </div>
+                <p class="text-sm text-slate-300 leading-relaxed">
+                    用於：直播背景音 (BGM)、個人影片配樂、開場結尾。<br>
+                    權限：含 YouTube 廣告收益、直播贊助收益。<br>
+                    禁止：嚴禁數位串流上架 (Spotify 等) 與實體商品販售。
+                </p>
+            </div>
+
+            <div class="tier-card tier-a">
+                <div class="flex items-center gap-2 mb-3">
+                    <span class="px-2 py-0.5 bg-indigo-500/20 text-indigo-400 rounded text-[10px] font-black border border-indigo-500/30">PLAN A</span>
+                    <h3 class="text-lg font-black text-indigo-300">獨家串流商業授權 (+NT$ 2,000)</h3>
+                </div>
+                <p class="text-sm text-slate-300 leading-relaxed">
+                    用於：個人原創單曲、Vtuber 主打歌。<br>
+                    權限：獨家授權甲方無限期將作品上架串流平台營利。<br>
+                    乙方承諾不將此曲重複授權他人，守護甲方作品唯一性。
+                </p>
+            </div>
+
+            <div class="tier-card tier-b">
+                <div class="flex items-center gap-2 mb-3">
+                    <span class="px-2 py-0.5 bg-emerald-500/20 text-emerald-400 rounded text-[10px] font-black border border-emerald-500/30">PLAN B</span>
+                    <h3 class="text-lg font-black text-emerald-300">完全商業買斷授權 (Exclusive Buyout)</h3>
+                </div>
+                <p class="text-sm text-slate-300 leading-relaxed">
+                    用於：企業廣告、商業遊戲、實體 CD、音聲周邊。<br>
+                    權限：甲方擁有完全之著作財產權支配權，包含實體與數位發行。<br>
+                    <span class="text-white font-bold underline text-xs">※ 乙方（創作者）仍保留著作人格權（含作者署名權）。</span>
+                </p>
+            </div>
+        </div>
+        
+        <div class="mt-8 p-5 bg-slate-900/60 rounded-xl border border-sky-500/20 shadow-lg">
+            <strong class="text-white block mb-3 text-sm">● 公開署名義務：</strong>
+            <p class="text-xs text-slate-400 mb-4">於公開平台使用時均須在顯眼處標註創作者資訊：</p>
+            <div class="bg-black p-4 rounded font-mono text-sky-300 text-xs md:text-sm text-center select-all border border-sky-900/50 shadow-inner">
+                Music by Wsido Xrtp ECHO (QUASI ZER0 STUDIO)
+            </div>
+        </div>
+    </section>
+
+    <section class="contract-card tilt-effect">
+        <div class="spotlight"></div>
+        <h2 class="text-sky-400 font-bold text-xl mb-6 flex items-center gap-3">
+            <span class="opacity-20 text-4xl font-black">05</span> 保密、展示與 AI 聲明
+        </h2>
+        <ul class="space-y-6 text-base text-slate-300">
+            <li>● <strong class="text-white">作品展示權：</strong><br>乙方保留將成品用於個人作品集宣傳之權利（可配合甲方首播日）。</li>
+            <li>● <strong class="text-white">禁止外流：</strong><br>正式發布前，嚴禁將任何帶有浮水印之試聽檔、草稿發布於社群平台。</li>
+            <li>● <strong class="text-white">AI 輔助創作：</strong><br>適度結合技術輔助素材生成。但核心旋律與混音皆由人工親自製作。</li>
+        </ul>
+    </section>
+
+    <section class="mt-20 mb-12">
+        <div class="text-center mb-10">
+            <h4 class="text-white font-black text-2xl tracking-[0.2em] mb-2 uppercase">數位協議簽署終端</h4>
+            <p class="text-slate-500 text-xs tracking-widest uppercase">點擊面板複製確認文字並回傳至 Discord</p>
+        </div>
+
+        <div class="agreement-terminal magnetic" onclick="copyText()">
+            <div class="terminal-header">
+                <span>PROTOCOL: COMMISSION_STRICT_FINAL</span>
+                <span class="animate-pulse">● 系統狀態：已加密保護</span>
+            </div>
+            <div class="terminal-body group">
+                <div class="copy-content" id="copy-text">
+                    我已確認正式報價、排單機制、修改時效與授權方案，<br>並同意 QUASI ZER0 STUDIO 委託合約暨服務條款。
+                </div>
+                <div class="absolute bottom-4 left-0 w-full text-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span class="text-[0.6rem] text-sky-500 font-bold tracking-[0.4em] uppercase">[ 點擊以確認簽署數位合約 ]</span>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<div id="copy-toast">✅ 協議文字已複製！請回傳至 Discord</div>
+
+<footer class="text-center pt-10 pb-24 relative z-10">
+    <a href="index.html" class="magnetic inline-flex items-center gap-3 text-slate-600 hover:text-sky-400 transition text-xs font-bold tracking-widest group uppercase">
+        <svg class="w-4 h-4 transform group-hover:-translate-x-3 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+        返回工作室首頁 RETURN TO HOME
+    </a>
+</footer>
+
+<script>
+/* --- 1. 3D 穿梭特效引擎 --- */
+const pCanvas = document.getElementById('particle-canvas');
+const pCtx = pCanvas.getContext('2d');
+let particlesArray = [];
+let mouse = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+
+function initParticles() {
+    pCanvas.width = window.innerWidth;
+    pCanvas.height = window.innerHeight;
+    particlesArray = [];
+    for (let i = 0; i < 400; i++) {
+        particlesArray.push({
+            x: (Math.random() - 0.5) * pCanvas.width * 2,
+            y: (Math.random() - 0.5) * pCanvas.height * 2,
+            z: Math.random() * 1000,
+            pz: 0,
+            speed: (Math.random() * 2) + 1.2
+        });
+    }
+}
+function animateParticles() {
+    requestAnimationFrame(animateParticles);
+    pCtx.clearRect(0, 0, pCanvas.width, pCanvas.height);
+    const cx = pCanvas.width / 2 + (mouse.x - pCanvas.width/2) * 0.1;
+    const cy = pCanvas.height / 2 + (mouse.y - pCanvas.height/2) * 0.1;
+
+    particlesArray.forEach(p => {
+        p.pz = p.z;
+        p.z -= p.speed;
+        if (p.z <= 1) { p.z = 1000; p.pz = 1000; }
+        let px = (p.x / p.z) * 500 + cx;
+        let py = (p.y / p.z) * 500 + cy;
+        let ppx = (p.x / p.pz) * 500 + cx;
+        let ppy = (p.y / p.pz) * 500 + cy;
+        const alpha = Math.max(0, 1 - (p.z / 1000));
+        pCtx.strokeStyle = `rgba(56, 189, 248, ${alpha * 0.6})`;
+        pCtx.lineWidth = Math.max(0.5, (1 - p.z / 1000) * 2.5);
+        pCtx.beginPath(); pCtx.moveTo(ppx, ppy); pCtx.lineTo(px, py); pCtx.stroke();
+    });
+}
+window.addEventListener('resize', initParticles);
+initParticles(); animateParticles();
+
+/* --- 2. 聚光燈與互動偵測 --- */
+document.addEventListener('mousemove', (e) => {
+    mouse.x = e.clientX; mouse.y = e.clientY;
+    document.querySelectorAll('.contract-card').forEach(card => {
+        const rect = card.getBoundingClientRect();
+        card.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
+        card.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
+        const rotateX = ((e.clientY - rect.top - rect.height/2) / (rect.height/2)) * -0.6;
+        const rotateY = ((e.clientX - rect.left - rect.width/2) / (rect.width/2)) * 0.6;
+        card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+    });
+});
+
+/* --- 3. 弱化磁吸 --- */
+document.querySelectorAll('.magnetic').forEach(btn => {
+    btn.addEventListener('mousemove', (e) => {
+        const rect = btn.getBoundingClientRect();
+        const x = (e.clientX - rect.left - rect.width/2) * 0.08;
+        const y = (e.clientY - rect.top - rect.height/2) * 0.08;
+        btn.style.transform = `translate(${x}px, ${y}px)`;
+    });
+    btn.addEventListener('mouseleave', () => btn.style.transform = 'translate(0,0)');
+});
+
+function copyText() {
+    const text = document.getElementById('copy-text').innerText.trim();
+    navigator.clipboard.writeText(text).then(() => {
+        const toast = document.getElementById('copy-toast');
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 2500);
+    });
+}
+</script>
 </body>
 </html>
