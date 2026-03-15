@@ -9,315 +9,743 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&family=Poppins:wght@600;700;900&display=swap" rel="stylesheet">
 <style>
+/* 1. 頂部滾動進度條 */
+#scroll-progress {
+    position: fixed; top: 0; left: 0; width: 0%; height: 3px;
+    background: linear-gradient(to right, #00f2fe, #818cf8, #c084fc);
+    z-index: 10000; box-shadow: 0 0 15px rgba(129, 140, 248, 0.8);
+    transition: width 0.1s ease-out;
+}
+
+/* 2. 背景設定 */
 body {
-    background-color: #050505;
+    background: linear-gradient(-45deg, #050505, #0a0f1c, #110c2e, #050505);
+    background-size: 400% 400%;
+    animation: gradientBG 15s ease infinite;
     color: #e2e8f0;
     font-family: 'Noto Sans TC', sans-serif;
-    background-image: radial-gradient(circle at 50% 0%, #1e1b4b 0%, #050505 70%);
-    background-attachment: fixed;
+    overflow-x: hidden;
 }
-h1, h2, h3, .brand-font {
-    font-family: 'Poppins', 'Noto Sans TC', sans-serif;
+@keyframes gradientBG {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
 }
+
+/* 3D 穿梭畫布底層 */
+#particle-canvas {
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    z-index: -3; pointer-events: none;
+}
+
+/* 背景動態呼吸光暈 */
+.glow-orb-1 {
+    position: fixed; top: -10%; left: -10%; width: 50vw; height: 50vw;
+    background: radial-gradient(circle, rgba(14,165,233,0.15) 0%, rgba(0,0,0,0) 70%);
+    border-radius: 50%; z-index: -4; filter: blur(80px);
+    animation: pulse 8s infinite alternate ease-in-out;
+}
+.glow-orb-2 {
+    position: fixed; bottom: -10%; right: -10%; width: 60vw; height: 60vw;
+    background: radial-gradient(circle, rgba(139, 92, 246, 0.15) 0%, rgba(0,0,0,0) 70%);
+    border-radius: 50%; z-index: -4; filter: blur(80px);
+    animation: pulse 10s infinite alternate-reverse ease-in-out;
+}
+@keyframes pulse {
+    0% { transform: scale(0.8); opacity: 0.5; }
+    100% { transform: scale(1.2); opacity: 1; }
+}
+
+/* 滑鼠游標跟隨光暈 */
+#cursor-glow {
+    position: fixed; width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(56, 189, 248, 0.12) 0%, transparent 60%);
+    border-radius: 50%; pointer-events: none; transform: translate(-50%, -50%);
+    z-index: 9999; transition: opacity 0.3s ease; mix-blend-mode: screen;
+}
+
+/* 3. 滾動進場動畫 (Scroll Reveal) */
+.reveal {
+    opacity: 0; transform: translateY(50px) scale(0.95);
+    transition: all 0.9s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+.reveal.active { opacity: 1; transform: translateY(0) scale(1); }
+
+/* 標題與故障 Glitch 特效 */
+h1, h2, h3, .brand-font { font-family: 'Poppins', 'Noto Sans TC', sans-serif; }
+.glitch-wrapper { position: relative; display: inline-block; }
 .title-neon {
     background: linear-gradient(to right, #00f2fe, #4facfe, #818cf8);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    display: inline-block;
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    position: relative; font-weight: 900;
 }
+.title-neon::before, .title-neon::after {
+    content: attr(data-text); position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: inherit; -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    opacity: 0.5; pointer-events: none;
+}
+.title-neon::before {
+    left: 2px; text-shadow: -1px 0 red; clip: rect(24px, 550px, 90px, 0);
+    animation: glitch-anim-2 3s infinite linear alternate-reverse;
+}
+.title-neon::after {
+    left: -2px; text-shadow: -1px 0 blue; clip: rect(85px, 550px, 140px, 0);
+    animation: glitch-anim 2.5s infinite linear alternate-reverse;
+}
+@keyframes glitch-anim {
+    0% { clip: rect(11px, 9999px, 81px, 0); }
+    20% { clip: rect(85px, 9999px, 31px, 0); }
+    40% { clip: rect(100px, 9999px, 45px, 0); }
+    60% { clip: rect(56px, 9999px, 12px, 0); }
+    80% { clip: rect(23px, 9999px, 98px, 0); }
+    100% { clip: rect(78px, 9999px, 15px, 0); }
+}
+@keyframes glitch-anim-2 {
+    0% { clip: rect(65px, 9999px, 100px, 0); }
+    20% { clip: rect(12px, 9999px, 56px, 0); }
+    40% { clip: rect(98px, 9999px, 23px, 0); }
+    60% { clip: rect(45px, 9999px, 85px, 0); }
+    80% { clip: rect(31px, 9999px, 11px, 0); }
+    100% { clip: rect(81px, 9999px, 78px, 0); }
+}
+
+/* 4. 3D 玻璃擬物卡片 + 內部聚光燈 */
 .neon-card {
-    background-color: rgba(17, 24, 39, 0.7);
-    backdrop-filter: blur(10px);
-    border-radius: 16px;
-    padding: 2rem;
-    margin-bottom: 2rem;
-    border: 1px solid #1f2937;
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    position: relative;
-    overflow: hidden;
+    background: linear-gradient(145deg, rgba(30, 41, 59, 0.6), rgba(15, 23, 42, 0.8));
+    backdrop-filter: blur(20px); border-radius: 16px; padding: 2.5rem;
+    margin-bottom: 2rem; border: 1px solid rgba(255, 255, 255, 0.08);
+    transition: box-shadow 0.4s ease, border-color 0.4s ease, transform 0.1s ease-out;
+    position: relative; overflow: hidden; transform-style: preserve-3d;
+    --mouse-x: 50%; --mouse-y: 50%;
+}
+.neon-card .spotlight {
+    position: absolute; inset: 0; z-index: 0; pointer-events: none;
+    background: radial-gradient(600px circle at var(--mouse-x) var(--mouse-y), rgba(56, 189, 248, 0.08), transparent 40%);
+    opacity: 0; transition: opacity 0.3s ease;
+}
+.neon-card:hover .spotlight { opacity: 1; }
+.neon-card::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; z-index: 10;
+    background: linear-gradient(to bottom, #00f2fe, #4facfe, #818cf8);
+    transition: width 0.3s ease, box-shadow 0.3s ease;
 }
 .neon-card:hover {
-    border-color: #4facfe;
-    box-shadow: 0 10px 30px -10px rgba(79, 172, 254, 0.5);
-    transform: translateY(-5px);
+    border-color: rgba(56, 189, 248, 0.4);
+    box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(56, 189, 248, 0.1);
 }
-.neon-card::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 4px;
-    background: linear-gradient(to bottom, #00f2fe, #4facfe, #818cf8);
+.neon-card:hover::before { width: 6px; box-shadow: 0 0 20px #4facfe; }
+.neon-card > * { position: relative; z-index: 10; }
+
+/* 常見問題 FAQ 摺疊特效 */
+.faq-content {
+    transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease;
+    opacity: 0;
 }
-audio {
-    width: 100%;
-    margin-top: 1rem;
-    border-radius: 8px;
-    outline: none;
-    position: relative;
-    z-index: 10;
+.faq-item.active .faq-content {
+    opacity: 1;
 }
-audio::-webkit-media-controls-panel {
-    background-color: #1e293b;
+.faq-item.active .faq-icon {
+    transform: rotate(180deg);
 }
-audio::-webkit-media-controls-current-time-display,
-audio::-webkit-media-controls-time-remaining-display {
-    color: #fff;
+.faq-item.active .faq-btn {
+    background: rgba(56, 189, 248, 0.08);
 }
-.highlight-text {
-    color: #4facfe;
-    font-weight: 700;
+.faq-btn:hover { background: rgba(56, 189, 248, 0.05); }
+
+/* 磁吸按鈕與流光 */
+.magnetic { transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94); will-change: transform; }
+.btn-shimmer { position: relative; overflow: hidden; }
+.btn-shimmer::after {
+    content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+    background: linear-gradient(to right, transparent, rgba(255,255,255,0.4), transparent);
+    transform: rotate(45deg) translate(-100%, 100%); transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
-#visualizer-container {
-    width: 100%;
-    height: 120px;
-    margin-top: 1.5rem;
-    position: relative;
+.btn-shimmer:hover::after { transform: rotate(45deg) translate(100%, -100%); transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
+
+/* 客製化播放器 UI */
+.custom-audio-player {
+    background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(56, 189, 248, 0.3);
+    border-radius: 16px; padding: 1.2rem 1.5rem; display: flex; align-items: center; gap: 1.5rem;
+    margin-top: 1rem; transition: box-shadow 0.1s ease-out;
 }
-canvas {
-    display: block;
-    width: 100%;
-    height: 100%;
-    border-radius: 8px;
+.play-btn {
+    width: 54px; height: 54px; border-radius: 50%; flex-shrink: 0;
+    background: linear-gradient(135deg, #00f2fe, #4facfe); border: none; color: white;
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+    box-shadow: 0 4px 20px rgba(79, 172, 254, 0.5); transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
+.play-btn:hover { transform: scale(1.15); box-shadow: 0 6px 25px rgba(79, 172, 254, 0.8); }
+.play-btn svg { width: 24px; height: 24px; fill: currentColor; margin-left: 4px; }
+.play-btn.playing svg { margin-left: 0; }
+.progress-container { flex-grow: 1; display: flex; flex-direction: column; gap: 0.4rem; }
+.progress-bar {
+    width: 100%; height: 8px; background: rgba(0, 0, 0, 0.5); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 4px; cursor: pointer; position: relative; overflow: hidden;
+}
+.progress-fill {
+    height: 100%; background: linear-gradient(to right, #00f2fe, #818cf8);
+    width: 0%; border-radius: 4px; pointer-events: none; position: relative;
+    box-shadow: 0 0 10px rgba(129, 140, 248, 0.8);
+}
+.time-display { font-family: 'Poppins', monospace; font-size: 0.8rem; color: #94a3b8; text-align: right; font-weight: 600; }
+#visualizer-container { width: 100%; height: 140px; margin-top: 1.5rem; position: relative; }
+canvas { display: block; width: 100%; height: 100%; }
 </style>
 </head>
-<body class="p-6 md:p-12 max-w-4xl mx-auto selection:bg-sky-500 selection:text-white">
+<body class="p-6 md:p-12 max-w-4xl mx-auto selection:bg-sky-500 selection:text-white relative">
 
-<header class="mb-16 mt-8 text-center md:text-left">
-    <div class="brand-font text-sm text-sky-400 tracking-widest mb-2">QUASI ZER0 STUDIO</div>
-    <h1 class="text-5xl md:text-6xl font-black mb-4 title-neon tracking-tight">Music Commission</h1>
-    <p class="text-slate-400 text-lg md:text-xl font-light">不只是音符的堆砌，而是完整靈魂的具現。</p>
+<div id="scroll-progress"></div>
+<div id="cursor-glow"></div>
+<canvas id="particle-canvas"></canvas>
+<div class="glow-orb-1 pointer-events-none"></div>
+<div class="glow-orb-2 pointer-events-none"></div>
+
+<header class="mb-12 mt-8 text-center md:text-left reveal">
+    <div class="brand-font text-sm text-sky-400 tracking-widest mb-3 animate-pulse border-b border-sky-500/30 inline-block pb-1">QUASI ZER0 STUDIO</div>
+    <div class="glitch-wrapper mb-4">
+        <h1 class="text-5xl md:text-7xl font-black title-neon tracking-tighter" data-text="Music Commission">Music Commission</h1>
+    </div>
+    <p class="text-slate-400 text-lg md:text-xl font-light tracking-wide mt-2">不只是音符的堆砌，而是完整靈魂的具現。</p>
 </header>
 
-<section class="mb-12">
-    <h2 class="text-2xl font-bold mb-6 flex items-center gap-3">
-        <span class="text-sky-400">01.</span> 創作堅持
+<div class="bg-slate-900/80 backdrop-blur-xl border border-slate-700/80 rounded-xl p-8 mb-16 text-left hover:border-sky-500/50 transition-colors relative z-10 shadow-2xl reveal tilt-effect">
+    <div class="spotlight"></div>
+    <h4 class="text-sky-400 font-bold mb-4 text-lg flex items-center gap-2">
+        <svg class="w-6 h-6 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        【透明度聲明：關於 AI 輔助工具的使用規範】
+    </h4>
+    <p class="text-sm leading-relaxed text-slate-300 mb-6 relative z-10">
+        本工作室秉持音樂職人精神，深知每一首作品都是委託人心血的具現。為避免「一鍵生成」的疑慮，在此透明公開本工作室的製作流程。我們僅將 AI 視為「素材發聲源」與「音訊處理器」，絕不取代核心的創作靈魂。
+    </p>
+    <div class="grid md:grid-cols-2 gap-6 text-sm relative z-10">
+        <div class="bg-sky-950/40 p-5 rounded-lg border border-sky-500/30 shadow-inner">
+            <strong class="text-sky-300 flex items-center gap-2 mb-3 text-base"><span class="text-xl">✅</span> AI 參與的輔助範圍：</strong>
+            <ul class="space-y-3 text-slate-400 list-disc list-inside marker:text-sky-500">
+                <li><strong class="text-slate-200">人聲生成與 DAW 精修：</strong>適度使用 Synthesizer V 等技術生成無歌詞哼唱。生成後匯入 DAW 進行極高比例的<span class="text-sky-400 font-bold">人工切片、音高精修與空間處理</span>。</li>
+                <li><strong class="text-slate-200">音訊分離：</strong>使用 RipX DAW 等專業演算法提取純淨素材。</li>
+                <li><strong class="text-slate-200">靈感發想：</strong>專案初期生成聲響材質作參考，後續全數人工重製。</li>
+            </ul>
+        </div>
+        <div class="bg-slate-900/60 p-5 rounded-lg border border-slate-700/50 shadow-inner">
+            <strong class="text-white flex items-center gap-2 mb-3 text-base"><span class="text-xl">❌</span> 堅持 100% 人工核心：</strong>
+            <ul class="space-y-3 text-slate-400 list-disc list-inside marker:text-slate-500">
+                <li><strong class="text-slate-200">結構與情感鋪陳：</strong>ED 餘韻營造與過場情緒編排。</li>
+                <li><strong class="text-slate-200">和弦與主旋律：</strong>核心旋律與和聲皆為人工編排與 MIDI 繪製。</li>
+                <li><strong class="text-slate-200">混音與母帶後期：</strong>各樂器 EQ、動態壓縮及空間感，皆由人工雙耳監聽細調。</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<section class="mb-16 reveal">
+    <h2 class="text-3xl font-black mb-8 flex items-center gap-4 tracking-wide">
+        <span class="text-sky-400 brand-font text-4xl">01.</span> 試營運報價與流程
     </h2>
-    <div class="neon-card">
-        <h3 class="text-xl font-bold mb-3 text-white">初稿即為完整的靈魂</h3>
-        <p class="leading-relaxed text-slate-300 mb-4">
+    <div class="neon-card border-sky-500/30 tilt-effect hover:shadow-[0_0_50px_rgba(56,189,248,0.2)]">
+        <div class="spotlight"></div>
+        <div class="bg-gradient-to-r from-sky-900/40 to-indigo-900/40 border border-sky-500/50 rounded-xl p-6 mb-8 transform transition-transform shadow-lg relative z-10">
+            <h4 class="text-sky-400 font-bold mb-3 flex items-center gap-2 text-lg">✨ 委託報價參考</h4>
+            <p class="text-slate-300 leading-relaxed mb-2">
+                目前單曲委託暫定報價區間為 <span class="text-sky-300 font-black text-2xl tracking-wider">NT$ 3,500 - 6,500</span>。
+            </p>
+            <p class="text-sm text-slate-400 leading-relaxed">
+                實際價格將依據曲目長度、編曲複雜度及細節需求進行客製化評估。價格皆可保持彈性，非常歡迎您帶著預算直接與我洽談討論！
+            </p>
+        </div>
+
+        <div class="border-l-2 border-sky-500/50 pl-8 space-y-10 relative ml-2 md:ml-4 py-2 z-10">
+            <div class="relative group">
+                <div class="absolute -left-[42px] top-1.5 bg-sky-400 w-5 h-5 rounded-full shadow-[0_0_15px_#38bdf8] group-hover:scale-150 transition-transform duration-300"></div>
+                <h3 class="text-2xl font-bold text-white mb-3 group-hover:text-sky-300 transition-colors">Step 1. Discord 需求洽談與報價</h3>
+                <p class="text-slate-400 leading-relaxed">請私訊我的 DC (<span class="text-sky-300 font-bold">quasi_zer0</span>)。我們將詳細確認您的故事設定與風格，我會根據複雜度給予一個專屬報價。<br>雙方確認金額與檔期後，會向您收取 <span class="text-sky-300 font-bold">50% 訂金</span> 以確立委託並正式開工。</p>
+            </div>
+            <div class="relative group">
+                <div class="absolute -left-[42px] top-1.5 bg-sky-400 w-5 h-5 rounded-full shadow-[0_0_15px_#38bdf8] group-hover:scale-150 transition-transform duration-300"></div>
+                <h3 class="text-2xl font-bold text-white mb-3 group-hover:text-sky-300 transition-colors">Step 2. 交付完整初稿 (防盜版浮水印)</h3>
+                <p class="text-slate-400 leading-relaxed">短篇約 <span class="text-sky-300 font-bold">1-5 天</span> ｜ 長篇約 <span class="text-sky-300 font-bold">3-14 天</span><br>我會交付帶有浮水印的高完成度初稿供您試聽。此階段可進行 1-2 次的細節微調，若大方向完全錯誤，亦提供整曲重製機會。</p>
+            </div>
+            <div class="relative group">
+                <div class="absolute -left-[42px] top-1.5 bg-sky-400 w-5 h-5 rounded-full shadow-[0_0_15px_#38bdf8] group-hover:scale-150 transition-transform duration-300"></div>
+                <h3 class="text-2xl font-bold text-white mb-3 group-hover:text-sky-300 transition-colors">Step 3. 驗收與尾款支付</h3>
+                <p class="text-slate-400 leading-relaxed">當您聽完並確認「這就是我要的感覺！」後，才需支付剩餘 <span class="text-sky-300 font-bold">50% 尾款</span>。<br>收款後，我將立即為您解鎖並交付無浮水印的 48kHz/24bit 高音質 Wav 正式授權原檔。</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-16 reveal">
+    <h2 class="text-3xl font-black mb-8 flex items-center gap-4 tracking-wide">
+        <span class="text-sky-400 brand-font text-4xl">02.</span> 創作堅持
+    </h2>
+    <div class="neon-card tilt-effect">
+        <div class="spotlight"></div>
+        <h3 class="text-2xl font-bold mb-4 text-white relative z-10">初稿即為完整的靈魂</h3>
+        <p class="leading-relaxed text-slate-300 mb-4 text-lg relative z-10">
             我深信作品的渲染力來自整體的完成度，因此交付的初稿即為具備完整混音與編排的最終成品，避免片段雛形造成構思干擾。
         </p>
-        <p class="leading-relaxed text-slate-300">
-            若成品方向不符預期，我提供 <span class="highlight-text">1-2 次的「整曲重新創作」</span> 或細微調整的機會，確保最終產出完美貼合你的需求，同時保障彼此的創作能量。
+        <p class="leading-relaxed text-slate-400 relative z-10">
+            若成品方向不符預期，我提供 <span class="text-sky-400 font-bold border-b border-sky-400/50">1-2 次的「整曲重新創作」</span> 或細微調整的機會，確保最終產出完美貼合你的需求，同時保障彼此的創作能量。
         </p>
     </div>
 </section>
 
-<section class="mb-12">
-    <h2 class="text-2xl font-bold mb-6 flex items-center gap-3">
-        <span class="text-sky-400">02.</span> 作品展示
+<section class="mb-16 reveal">
+    <h2 class="text-3xl font-black mb-8 flex items-center gap-4 tracking-wide">
+        <span class="text-sky-400 brand-font text-4xl">03.</span> 作品展示
     </h2>
-    <div class="neon-card">
-        <div class="flex justify-between items-end mb-4">
-            <div>
-                <h3 class="text-lg font-bold text-white">印象曲 / 画面が灯る瞬間 完璧な誓いのカウントダウン</h3>
-                <p class="text-sm text-slate-400 mt-1">請點擊播放試聽完整品質</p>
+    <div class="neon-card tilt-effect" id="player-card">
+        <div class="spotlight"></div>
+        <div class="mb-4 relative z-10">
+            <h3 class="text-xl font-bold text-white tracking-wide">印象曲 / 画面が灯る瞬間 完璧な誓いのカウントダウン</h3>
+            <p class="text-sm text-sky-400 mt-2 font-bold animate-pulse">♪ 點擊下方按鈕試聽音質與視覺化共鳴</p>
+        </div>
+        
+        <div class="custom-audio-player relative z-10">
+            <button class="play-btn" id="customPlayBtn">
+                <svg id="playIcon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                <svg id="pauseIcon" viewBox="0 0 24 24" style="display: none;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+            </button>
+            <div class="progress-container">
+                <div class="progress-bar" id="progressBar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="time-display" id="timeDisplay">0:00 / 0:00</div>
             </div>
         </div>
         
-        <audio id="player" controls crossorigin="anonymous">
+        <audio id="player" crossorigin="anonymous" style="display: none;">
             <source src="画面が灯る瞬間 完璧な誓いのカウントダウン.mp3" type="audio/mpeg">
         </audio>
 
-        <div id="visualizer-container">
+        <div id="visualizer-container" class="relative z-10">
             <canvas id="visualizer"></canvas>
         </div>
-    </div>
-</section>
-
-<section class="mb-12">
-    <h2 class="text-2xl font-bold mb-6 flex items-center gap-3">
-        <span class="text-sky-400">03.</span> 試營運報價與流程
-    </h2>
-    <div class="neon-card border-sky-500/30">
-        <div class="bg-sky-900/30 border border-sky-500/50 rounded-lg p-4 mb-8">
-            <h4 class="text-sky-400 font-bold mb-3 flex items-center gap-2">✨ 目前為工作室累積作品期</h4>
-            <p class="text-sm text-slate-300 leading-relaxed mb-2">
-                因為希望能挑戰更多元的風格並累積作品集，目前工作室採 <span class="text-sky-300 font-bold">「無固定定價、客製化報價」</span>。
-            </p>
-            <p class="text-sm text-slate-300 leading-relaxed">
-                價格將會比一般市價更具彈性與優惠，非常歡迎剛起步的 Vtuber 或創作者帶著預算來與我討論！
-            </p>
-        </div>
-
-        <div class="border-l-2 border-sky-500/50 pl-6 space-y-8 relative ml-2 md:ml-4 py-2">
-            
-            <div class="relative">
-                <div class="absolute -left-[33px] top-1.5 bg-sky-400 w-4 h-4 rounded-full shadow-[0_0_10px_#38bdf8]"></div>
-                <h3 class="text-xl font-bold text-white mb-2">Step 1. Discord 需求洽談與報價</h3>
-                <p class="text-slate-400">請私訊我的 DC (<span class="text-sky-300 font-bold">quasi_zer0</span>)。我們將詳細確認您的故事設定與風格，我會根據複雜度給予一個專屬報價。<br>雙方確認金額與檔期後，會向您收取 <span class="text-sky-300 font-bold">50% 訂金</span> 以確立委託並正式開工。</p>
-            </div>
-
-            <div class="relative">
-                <div class="absolute -left-[33px] top-1.5 bg-sky-400 w-4 h-4 rounded-full shadow-[0_0_10px_#38bdf8]"></div>
-                <h3 class="text-xl font-bold text-white mb-2">Step 2. 交付完整初稿 (防盜版浮水印)</h3>
-                <p class="text-slate-400">短篇約 <span class="text-sky-300 font-bold">1-5 天</span> ｜ 長篇約 <span class="text-sky-300 font-bold">3-14 天</span><br>我會交付帶有浮水印的高完成度初稿供您試聽。此階段可進行 1-2 次的細節微調，若大方向完全錯誤，亦提供整曲重製機會。</p>
-            </div>
-
-            <div class="relative">
-                <div class="absolute -left-[33px] top-1.5 bg-sky-400 w-4 h-4 rounded-full shadow-[0_0_10px_#38bdf8]"></div>
-                <h3 class="text-xl font-bold text-white mb-2">Step 3. 驗收與尾款支付</h3>
-                <p class="text-slate-400">當您聽完並確認「這就是我要的感覺！」後，才需支付剩餘 <span class="text-sky-300 font-bold">50% 尾款</span>。<br>收款後，我將立即為您解鎖並交付無浮水印的 48kHz/24bit 高音質 Wav 正式授權原檔。</p>
-            </div>
-
+        
+        <div class="mt-8 text-center border-t border-slate-700/50 pt-8 relative z-10">
+            <a href="https://www.youtube.com/@wsidoxrtp/featured" target="_blank" class="magnetic inline-flex items-center justify-center gap-3 bg-slate-900 hover:bg-slate-800 text-white border border-slate-700 transition-all px-8 py-4 rounded-full font-bold text-base shadow-2xl group w-full md:w-auto hover:border-red-500/50 hover:shadow-[0_0_20px_rgba(255,0,0,0.3)]">
+                <svg class="w-7 h-7 group-hover:scale-125 transition-transform duration-300" viewBox="0 0 24 24" fill="#FF0000"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                前往 YouTube 聆聽更多作品
+            </a>
         </div>
     </div>
 </section>
 
-<section class="mb-12">
-    <h2 class="text-2xl font-bold mb-6 flex items-center gap-3">
-        <span class="text-sky-400">04.</span> 委託前請準備
+<section class="mb-16 reveal">
+    <h2 class="text-3xl font-black mb-8 flex items-center gap-4 tracking-wide">
+        <span class="text-sky-400 brand-font text-4xl">04.</span> 委託前請準備
     </h2>
-    <div class="neon-card">
-        <ul class="space-y-4">
-            <li class="flex items-start">
-                <svg class="w-6 h-6 text-sky-400 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+    <div class="neon-card tilt-effect">
+        <div class="spotlight"></div>
+        <ul class="space-y-8 relative z-10">
+            <li class="flex items-start group">
+                <div class="bg-gradient-to-br from-sky-900 to-slate-900 p-3 rounded-xl mr-5 group-hover:from-sky-500/40 transition-colors shadow-lg border border-sky-500/20">
+                    <svg class="w-8 h-8 text-sky-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </div>
                 <div>
-                    <strong class="text-white text-lg block mb-1">完整故事線與設定</strong>
-                    <span class="text-slate-400">包含角色背景、世界觀故事線、性格描述。設定越具體，作品越能貼合。</span>
+                    <strong class="text-white text-xl block mb-2 group-hover:text-sky-300 transition-colors">完整故事線與設定</strong>
+                    <span class="text-slate-400 leading-relaxed">包含角色背景、世界觀故事線、性格描述。設定越具體，作品越能貼合。</span>
                 </div>
             </li>
-            <li class="flex items-start">
-                <svg class="w-6 h-6 text-sky-400 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path></svg>
+            <li class="flex items-start group">
+                <div class="bg-gradient-to-br from-sky-900 to-slate-900 p-3 rounded-xl mr-5 group-hover:from-sky-500/40 transition-colors shadow-lg border border-sky-500/20">
+                    <svg class="w-8 h-8 text-sky-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path></svg>
+                </div>
                 <div>
-                    <strong class="text-white text-lg block mb-1">風格參考 (Reference)</strong>
-                    <span class="text-slate-400">提供 1-2 首風格相近的參考歌曲，幫助精準掌握音色感與節奏強度。</span>
+                    <strong class="text-white text-xl block mb-2 group-hover:text-sky-300 transition-colors">風格參考 (Reference)</strong>
+                    <span class="text-slate-400 leading-relaxed">提供 1-2 首風格相近的參考歌曲，幫助精準掌握音色感與節奏強度。</span>
                 </div>
             </li>
-            <li class="flex items-start">
-                <svg class="w-6 h-6 text-sky-400 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+            <li class="flex items-start group">
+                <div class="bg-gradient-to-br from-sky-900 to-slate-900 p-3 rounded-xl mr-5 group-hover:from-sky-500/40 transition-colors shadow-lg border border-sky-500/20">
+                    <svg class="w-8 h-8 text-sky-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                </div>
                 <div>
-                    <strong class="text-white text-lg block mb-1">明確的使用場景</strong>
-                    <span class="text-slate-400">說明這首歌會出現在哪裡，是開場、結尾還是背景雜談使用。</span>
+                    <strong class="text-white text-xl block mb-2 group-hover:text-sky-300 transition-colors">明確的使用場景</strong>
+                    <span class="text-slate-400 leading-relaxed">說明這首歌會出現在哪裡，是開場、結尾還是背景雜談使用。</span>
                 </div>
             </li>
         </ul>
     </div>
 </section>
 
-<section class="mb-12">
-    <h2 class="text-2xl font-bold mb-6 flex items-center gap-3">
-        <span class="text-sky-400">05.</span> 聯繫與關注
+<section class="mb-16 reveal">
+    <h2 class="text-3xl font-black mb-8 flex items-center gap-4 tracking-wide">
+        <span class="text-sky-400 brand-font text-4xl">05.</span> 聯繫與關注
     </h2>
-    <div class="grid md:grid-cols-2 gap-4">
-        <a href="https://discordapp.com/users/quasi_zer0" target="_blank" class="neon-card !mb-0 flex items-center p-4 hover:bg-slate-800 transition group cursor-pointer border-transparent hover:border-sky-400">
-            <div class="text-indigo-400 text-4xl mr-5 group-hover:scale-110 transition-transform">👾</div>
-            <div>
-                <div class="text-xs tracking-wider text-sky-400 mb-1 font-bold">DISCORD ID (推薦聯繫方式)</div>
+    <div class="grid md:grid-cols-3 gap-6">
+        <a href="https://discordapp.com/users/quasi_zer0" target="_blank" class="magnetic neon-card tilt-effect !mb-0 flex flex-col items-center justify-center p-8 hover:bg-slate-800/80 transition group cursor-pointer border-transparent hover:border-[#5865F2] text-center shadow-xl">
+            <div class="spotlight"></div>
+            <div class="mb-4 group-hover:scale-125 group-hover:-rotate-12 transition-transform duration-300 drop-shadow-[0_0_15px_rgba(88,101,242,0.5)] relative z-10">
+                <svg class="w-14 h-14" viewBox="0 0 127.14 96.36" fill="#5865F2"><path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.31,60,73.31,53s5-12.74,11.43-12.74S96.16,46,96.06,53,91.08,65.69,84.69,65.69Z"/></svg>
+            </div>
+            <div class="relative z-10">
+                <div class="text-xs tracking-widest text-slate-400 mb-2 font-bold group-hover:text-[#5865F2] transition-colors">DISCORD (推薦)</div>
                 <div class="text-xl font-black text-white brand-font">quasi_zer0</div>
             </div>
         </a>
-        <a href="https://www.youtube.com/@wsidoxrtp" target="_blank" class="neon-card !mb-0 flex items-center p-4 hover:bg-slate-800 transition group cursor-pointer border-transparent hover:border-red-500">
-            <div class="text-red-500 text-4xl mr-5 group-hover:scale-110 transition-transform">▶️</div>
-            <div>
-                <div class="text-xs tracking-wider text-red-400 mb-1 font-bold">YOUTUBE</div>
-                <div class="text-xl font-black text-white brand-font">musical works</div>
+        
+        <a href="https://www.youtube.com/@wsidoxrtp/featured" target="_blank" class="magnetic neon-card tilt-effect !mb-0 flex flex-col items-center justify-center p-8 hover:bg-slate-800/80 transition group cursor-pointer border-transparent hover:border-[#FF0000] text-center shadow-xl">
+            <div class="spotlight"></div>
+            <div class="mb-4 group-hover:scale-125 transition-transform duration-300 drop-shadow-[0_0_15px_rgba(255,0,0,0.5)] relative z-10">
+                <svg class="w-14 h-14" viewBox="0 0 24 24" fill="#FF0000"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+            </div>
+            <div class="relative z-10">
+                <div class="text-xs tracking-widest text-slate-400 mb-2 font-bold group-hover:text-[#FF0000] transition-colors">YOUTUBE</div>
+                <div class="text-xl font-black text-white brand-font">觀看更多作品</div>
             </div>
         </a>
-        <a href="mailto:hi.qzk1@gmail.com" class="neon-card !mb-0 flex items-center p-4 hover:bg-slate-800 transition group cursor-pointer border-transparent hover:border-emerald-400 md:col-span-2">
-            <div class="text-emerald-400 text-4xl mr-5 group-hover:scale-110 transition-transform">✉️</div>
-            <div>
-                <div class="text-xs tracking-wider text-emerald-400 mb-1 font-bold">BUSINESS EMAIL</div>
+
+        <a href="mailto:hi.qzk1@gmail.com" class="magnetic neon-card tilt-effect !mb-0 flex flex-col items-center justify-center p-8 hover:bg-slate-800/80 transition group cursor-pointer border-transparent hover:border-emerald-400 text-center shadow-xl">
+            <div class="spotlight"></div>
+            <div class="mb-4 text-slate-300 group-hover:text-emerald-400 group-hover:scale-125 group-hover:rotate-6 transition-all duration-300 drop-shadow-[0_0_15px_rgba(52,211,153,0.5)] relative z-10">
+                <svg class="w-14 h-14" fill="currentColor" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+            </div>
+            <div class="relative z-10">
+                <div class="text-xs tracking-widest text-slate-400 mb-2 font-bold group-hover:text-emerald-400 transition-colors">BUSINESS EMAIL</div>
                 <div class="text-xl font-black text-white brand-font">hi.qzk1@gmail.com</div>
             </div>
         </a>
     </div>
 </section>
 
-<section class="mb-12">
-    <h2 class="text-2xl font-bold mb-6 flex items-center gap-3">
-        <span class="text-sky-400">06.</span> 專案詢價與討論
+<section class="mb-16 reveal">
+    <h2 class="text-3xl font-black mb-8 flex items-center gap-4 tracking-wide">
+        <span class="text-sky-400 brand-font text-4xl">06.</span> 常見問題 FAQ
     </h2>
-    <form action="https://formspree.io/f/mvzblwep" method="POST" class="neon-card">
-        <div class="mb-6">
-            <p class="text-slate-400 text-sm leading-relaxed mb-2">除了直接在 Discord 私訊我之外，您也可以先填寫下方表單讓我初步了解需求。</p>
-            <p class="text-slate-400 text-sm leading-relaxed">委託前請先詳閱並同意本站的 <a href="tos.html" class="text-sky-400 font-bold underline hover:text-sky-300 transition">【委託合約暨服務條款 ToS】</a>，我會再透過 Email 或 DC 與您聯繫討論。</p>
+    <div class="space-y-4">
+        <div class="faq-item neon-card !p-0 !mb-0 overflow-hidden tilt-effect">
+            <button class="faq-btn w-full text-left p-6 flex justify-between items-center focus:outline-none relative z-10 transition-colors">
+                <span class="text-lg font-bold text-white tracking-wide pr-4">Q1：請問可以委託有真人演唱歌詞的歌曲嗎？</span>
+                <svg class="w-6 h-6 text-sky-400 transform transition-transform duration-300 faq-icon shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            </button>
+            <div class="faq-content max-h-0 overflow-hidden relative z-10 bg-slate-900/40">
+                <p class="p-6 pt-0 text-slate-300 leading-relaxed text-sm">
+                    目前工作室主打「純音樂編排」，非常擅長處理無歌詞的人聲切片（Vocal Chops）或和聲來營造氛圍，特別是帶有可愛感、適合做 ED 結尾的 Future Bass 等曲風。如果是需要完整填詞與真人主唱的流行歌，目前暫無提供此類服務喔！
+                </p>
+            </div>
+        </div>
+        <div class="faq-item neon-card !p-0 !mb-0 overflow-hidden tilt-effect">
+            <button class="faq-btn w-full text-left p-6 flex justify-between items-center focus:outline-none relative z-10 transition-colors">
+                <span class="text-lg font-bold text-white tracking-wide pr-4">Q2：如果我不太懂音樂術語，只有很模糊的概念可以委託嗎？</span>
+                <svg class="w-6 h-6 text-sky-400 transform transition-transform duration-300 faq-icon shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            </button>
+            <div class="faq-content max-h-0 overflow-hidden relative z-10 bg-slate-900/40">
+                <p class="p-6 pt-0 text-slate-300 leading-relaxed text-sm">
+                    當然可以！你不需要懂任何樂理。只要告訴我這首歌的情境（例如：想要一首聽起來很輕快、帶有未來感的背景音），或是提供你的 Vtuber 角色設定圖、故事背景，我都能將這些概念轉化為音樂。提供 1~2 首你喜歡的參考歌曲 (Reference) 會更有幫助！
+                </p>
+            </div>
+        </div>
+        <div class="faq-item neon-card !p-0 !mb-0 overflow-hidden tilt-effect">
+            <button class="faq-btn w-full text-left p-6 flex justify-between items-center focus:outline-none relative z-10 transition-colors">
+                <span class="text-lg font-bold text-white tracking-wide pr-4">Q3：最後交付的檔案會包含分軌檔 (Stems) 嗎？</span>
+                <svg class="w-6 h-6 text-sky-400 transform transition-transform duration-300 faq-icon shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            </button>
+            <div class="faq-content max-h-0 overflow-hidden relative z-10 bg-slate-900/40">
+                <p class="p-6 pt-0 text-slate-300 leading-relaxed text-sm">
+                    預設的報價包含交付最終混音完畢的 48kHz/24bit Wav 高音質母帶，並不包含各樂器的獨立分軌檔 (Stems)。若您的專案後續需要交由其他工程師重新混音，或是需要分軌檔進行互動網頁、遊戲引擎的製作，請於洽談時提出，會另外計算分軌輸出的授權費用。
+                </p>
+            </div>
+        </div>
+        <div class="faq-item neon-card !p-0 !mb-0 overflow-hidden tilt-effect">
+            <button class="faq-btn w-full text-left p-6 flex justify-between items-center focus:outline-none relative z-10 transition-colors">
+                <span class="text-lg font-bold text-white tracking-wide pr-4">Q4：付款方式有哪些？可以分期嗎？</span>
+                <svg class="w-6 h-6 text-sky-400 transform transition-transform duration-300 faq-icon shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            </button>
+            <div class="faq-content max-h-0 overflow-hidden relative z-10 bg-slate-900/40">
+                <p class="p-6 pt-0 text-slate-300 leading-relaxed text-sm">
+                    目前接受台灣國內銀行轉帳（若為海外客戶可使用 PayPal）。為保障雙方權益，一律採用「50% 訂金、50% 尾款」的兩階段收費方式，暫不提供多期分期付款。
+                </p>
+            </div>
+        </div>
+        <div class="faq-item neon-card !p-0 !mb-0 overflow-hidden tilt-effect">
+            <button class="faq-btn w-full text-left p-6 flex justify-between items-center focus:outline-none relative z-10 transition-colors">
+                <span class="text-lg font-bold text-white tracking-wide pr-4">Q5：萬一初稿出來的方向跟我原本想的完全不一樣怎麼辦？</span>
+                <svg class="w-6 h-6 text-sky-400 transform transition-transform duration-300 faq-icon shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            </button>
+            <div class="faq-content max-h-0 overflow-hidden relative z-10 bg-slate-900/40">
+                <p class="p-6 pt-0 text-slate-300 leading-relaxed text-sm">
+                    請放心，如果在初稿階段發現大方向有落差，工作室有提供 1 次的「整曲重製」機會。這也是為什麼我們會在 Step 1 的需求洽談階段盡可能與您對焦，確保我們對風格的想像是一致的。
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-16 reveal">
+    <h2 class="text-3xl font-black mb-8 flex items-center gap-4 tracking-wide">
+        <span class="text-sky-400 brand-font text-4xl">07.</span> 專案詢價與討論
+    </h2>
+    <form action="https://formspree.io/f/mvzblwep" method="POST" class="neon-card tilt-effect">
+        <div class="spotlight"></div>
+        <div class="mb-8 bg-slate-900/50 p-4 rounded-lg border border-slate-700 relative z-10">
+            <p class="text-slate-300 text-sm leading-relaxed mb-2">除了直接在 Discord 私訊我之外，您也可以先填寫下方表單讓我初步了解需求。</p>
+            <p class="text-slate-300 text-sm leading-relaxed">委託前請先詳閱並同意本站的 <a href="tos.html" class="text-sky-400 font-bold underline hover:text-sky-300 transition">【委託合約暨服務條款 ToS】</a>，我會再透過 Email 或 DC 與您聯繫討論。</p>
         </div>
         
-        <div class="mb-6">
+        <div class="mb-6 relative z-10">
             <label for="name" class="block text-sky-400 text-sm font-bold mb-2">您的稱呼 / Nickname</label>
-            <input type="text" id="name" name="name" required class="w-full bg-slate-900 border border-slate-700 text-white rounded-lg px-4 py-3 focus:outline-none focus:border-sky-400 focus:ring-1 focus:ring-sky-400 transition">
+            <input type="text" id="name" name="name" required class="w-full bg-slate-900/80 border border-slate-700 text-white rounded-lg px-5 py-4 focus:outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-500/50 transition-all hover:border-slate-500 shadow-inner">
         </div>
-        <div class="mb-6">
+        <div class="mb-6 relative z-10">
             <label for="email" class="block text-sky-400 text-sm font-bold mb-2">聯絡信箱或 Discord ID</label>
-            <input type="text" id="email" name="contact_info" required placeholder="請留下 Email 或您的 DC 帳號以便回覆" class="w-full bg-slate-900 border border-slate-700 text-white rounded-lg px-4 py-3 focus:outline-none focus:border-sky-400 focus:ring-1 focus:ring-sky-400 transition">
+            <input type="text" id="email" name="contact_info" required placeholder="請留下 Email 或您的 DC 帳號以便回覆" class="w-full bg-slate-900/80 border border-slate-700 text-white rounded-lg px-5 py-4 focus:outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-500/50 transition-all hover:border-slate-500 shadow-inner">
         </div>
-        <div class="mb-6">
+        <div class="mb-6 relative z-10">
             <label for="budget" class="block text-emerald-400 text-sm font-bold mb-2">預計預算範圍 / Budget (選填)</label>
-            <input type="text" id="budget" name="budget" placeholder="例如：NT$ 1000 - 3000，或填寫『依報價而定』" class="w-full bg-slate-900 border border-slate-700 text-white rounded-lg px-4 py-3 focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 transition">
+            <input type="text" id="budget" name="budget" placeholder="例如：NT$ 3500 - 6500，或填寫『依報價而定』" class="w-full bg-slate-900/80 border border-slate-700 text-white rounded-lg px-5 py-4 focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/50 transition-all hover:border-slate-500 shadow-inner">
         </div>
-        <div class="mb-6">
+        <div class="mb-6 relative z-10">
             <label for="type" class="block text-sky-400 text-sm font-bold mb-2">想討論的項目 / Commission Type</label>
-            <select id="type" name="type" required class="w-full bg-slate-900 border border-slate-700 text-white rounded-lg px-4 py-3 focus:outline-none focus:border-sky-400 focus:ring-1 focus:ring-sky-400 transition appearance-none">
+            <select id="type" name="type" required class="w-full bg-slate-900/80 border border-slate-700 text-white rounded-lg px-5 py-4 focus:outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-500/50 transition-all hover:border-slate-500 appearance-none cursor-pointer shadow-inner">
                 <option value="" disabled selected>請選擇大致需求，後續皆可彈性調整...</option>
                 <option value="短篇作品 (1-2m) - OP/ED、過場音效">短篇作品 (1-2m) - OP/ED、過場音效</option>
                 <option value="長篇作品 (3-5m) - 個人印象曲、核心主打歌">長篇作品 (3-5m) - 個人印象曲、核心主打歌</option>
                 <option value="其他客製化需求 / 尚未決定想先聊聊">其他客製化需求 / 尚未決定，想先聊聊</option>
             </select>
         </div>
-        <div class="mb-6">
+        <div class="mb-8 relative z-10">
             <label for="details" class="block text-sky-400 text-sm font-bold mb-2">初步構想 / Story & Setting</label>
-            <textarea id="details" name="details" rows="5" required placeholder="若有初步的角色設定、世界觀或想呈現的氛圍，歡迎在此分享。若還不確定也可以簡單填寫想討論的方向..." class="w-full bg-slate-900 border border-slate-700 text-white rounded-lg px-4 py-3 focus:outline-none focus:border-sky-400 focus:ring-1 focus:ring-sky-400 transition"></textarea>
+            <textarea id="details" name="details" rows="5" required placeholder="若有初步的角色設定、想營造的氛圍等，歡迎在此分享..." class="w-full bg-slate-900/80 border border-slate-700 text-white rounded-lg px-5 py-4 focus:outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-500/50 transition-all hover:border-slate-500 shadow-inner"></textarea>
         </div>
-        <div class="mb-6">
-            <label for="reference" class="block text-sky-400 text-sm font-bold mb-2">風格參考 / References (選填)</label>
-            <input type="text" id="reference" name="reference" placeholder="提供 1-2 首風格相近的參考歌曲連結" class="w-full bg-slate-900 border border-slate-700 text-white rounded-lg px-4 py-3 focus:outline-none focus:border-sky-400 focus:ring-1 focus:ring-sky-400 transition">
-        </div>
-        <button type="submit" class="w-full bg-gradient-to-r from-sky-500 to-indigo-500 hover:from-sky-400 hover:to-indigo-400 text-white font-bold text-lg py-4 px-8 rounded-lg shadow-lg hover:shadow-sky-500/50 transition-all transform hover:-translate-y-1">
+        <button type="submit" class="magnetic w-full btn-shimmer bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white font-black text-xl py-5 px-8 rounded-lg shadow-[0_0_20px_rgba(56,189,248,0.4)] hover:shadow-[0_0_40px_rgba(56,189,248,0.8)] transition-all relative z-10">
             送出詢價 / 聯絡討論
         </button>
     </form>
 </section>
 
-<footer class="mt-16 pt-8 border-t border-slate-800 text-center text-slate-500 pb-12">
-    <div class="max-w-3xl mx-auto bg-slate-900/50 border border-slate-800 rounded-lg p-6 mb-8 text-left">
-        <h4 class="text-sky-400 font-bold mb-2 text-sm">⚠️ 【特別聲明】關於 AI 輔助創作</h4>
-        <p class="text-xs leading-relaxed text-slate-400">
-            本工作室致力於提供最高品質的音樂作品。在創作流程中，為提升效率與豐富音樂層次，會視專案需求適度結合 AI 技術（如靈感發想、部分音效或素材生成等）作為輔助工具。所有的核心編排、混音與最終品質把關皆由人工親自完成。
-            <br><br>
-            若您對委託作品有「完全禁止使用 AI 參與」的嚴格限制或相關顧慮，請務必於委託前審慎評估，或於洽談階段主動提出，以確保最終成品符合您的期望。
-        </p>
-    </div>
-    <p class="mb-2 text-sm">交付預設為 48kHz/24bit Wav 檔。</p>
-    <div class="mt-6 font-bold tracking-wider brand-font text-slate-600">© 2026 QUASI ZER0 STUDIO</div>
+<footer class="mt-8 pt-10 border-t border-slate-800/80 text-center text-slate-500 pb-16 relative z-10 reveal">
+    <p class="mb-3 text-sm tracking-wide">交付預設為 48kHz/24bit Wav 檔。</p>
+    <div class="font-bold tracking-widest brand-font text-slate-600 text-sm">© 2026 QUASI ZER0 STUDIO</div>
 </footer>
 
 <script>
+// --- 1. 3D 穿梭星空/數據流特效 (Warp Speed) ---
+const pCanvas = document.getElementById('particle-canvas');
+const pCtx = pCanvas.getContext('2d');
+let particlesArray = [];
+// 預設將滑鼠鏡頭置中
+let mouse = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+
+function initParticles() {
+    pCanvas.width = window.innerWidth;
+    pCanvas.height = window.innerHeight;
+    particlesArray = [];
+    const numberOfParticles = 400; 
+    for (let i = 0; i < numberOfParticles; i++) {
+        particlesArray.push({
+            x: (Math.random() - 0.5) * pCanvas.width * 2,
+            y: (Math.random() - 0.5) * pCanvas.height * 2,
+            z: Math.random() * 1000,
+            pz: Math.random() * 1000, 
+            speed: (Math.random() * 3) + 1.5 
+        });
+    }
+}
+
+function animateParticles() {
+    requestAnimationFrame(animateParticles);
+    pCtx.clearRect(0, 0, pCanvas.width, pCanvas.height);
+
+    const cx = pCanvas.width / 2 + (mouse.x - pCanvas.width / 2) * 0.15;
+    const cy = pCanvas.height / 2 + (mouse.y - pCanvas.height / 2) * 0.15;
+
+    for (let i = 0; i < particlesArray.length; i++) {
+        let p = particlesArray[i];
+        p.pz = p.z; 
+        p.z -= p.speed; 
+
+        if (p.z <= 1) {
+            p.x = (Math.random() - 0.5) * pCanvas.width * 2;
+            p.y = (Math.random() - 0.5) * pCanvas.height * 2;
+            p.z = 1000;
+            p.pz = 1000;
+            p.speed = (Math.random() * 3) + 1.5;
+        }
+
+        let px = (p.x / p.z) * 500 + cx;
+        let py = (p.y / p.z) * 500 + cy;
+        let ppx = (p.x / p.pz) * 500 + cx;
+        let ppy = (p.y / p.pz) * 500 + cy;
+
+        pCtx.beginPath();
+        pCtx.moveTo(ppx, ppy);
+        pCtx.lineTo(px, py);
+        
+        const alpha = Math.max(0.1, 1 - (p.z / 1000));
+        pCtx.strokeStyle = `rgba(56, 189, 248, ${alpha})`;
+        pCtx.lineWidth = Math.max(0.5, (1 - p.z / 1000) * 4); 
+        pCtx.stroke();
+    }
+}
+window.addEventListener('resize', initParticles);
+initParticles();
+animateParticles();
+
+// --- 2. 滑鼠游標追蹤與卡片聚光燈 ---
+const cursorGlow = document.getElementById('cursor-glow');
+document.addEventListener('mousemove', (e) => {
+    mouse.x = e.clientX; 
+    mouse.y = e.clientY;
+    
+    cursorGlow.style.left = e.clientX + 'px';
+    cursorGlow.style.top = e.clientY + 'px';
+    
+    document.querySelectorAll('.neon-card').forEach(card => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        card.style.setProperty('--mouse-x', `${x}px`);
+        card.style.setProperty('--mouse-y', `${y}px`);
+    });
+});
+document.addEventListener('mouseout', () => { 
+    mouse.x = window.innerWidth / 2; 
+    mouse.y = window.innerHeight / 2; 
+});
+
+// --- 3. 磁吸按鈕特效 (Magnetic Elements) ---
+const magnetics = document.querySelectorAll('.magnetic');
+magnetics.forEach(btn => {
+    btn.addEventListener('mousemove', function(e) {
+        const position = btn.getBoundingClientRect();
+        const x = e.clientX - position.left - position.width / 2;
+        const y = e.clientY - position.top - position.height / 2;
+        btn.style.transform = `translate(${x * 0.3}px, ${y * 0.3}px) scale(1.05)`;
+    });
+    btn.addEventListener('mouseleave', function(e) {
+        btn.style.transform = `translate(0px, 0px) scale(1)`;
+    });
+});
+
+// --- 4. 3D 懸浮傾斜特效 (Tilt Effect) ---
+const tiltCards = document.querySelectorAll('.tilt-effect');
+tiltCards.forEach(card => {
+    card.addEventListener('mousemove', e => {
+        if(card.classList.contains('magnetic')) return; 
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+        const rotateX = ((y - centerY) / centerY) * -3;
+        const rotateY = ((x - centerX) / centerX) * 3;
+        card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-5px) scale(1.01)`;
+    });
+    card.addEventListener('mouseleave', () => {
+        if(card.classList.contains('magnetic')) return;
+        card.style.transform = `perspective(1000px) rotateX(0) rotateY(0) translateY(0) scale(1)`;
+    });
+});
+
+// --- 5. FAQ 摺疊特效 ---
+const faqItems = document.querySelectorAll('.faq-item');
+faqItems.forEach(item => {
+    const btn = item.querySelector('.faq-btn');
+    const content = item.querySelector('.faq-content');
+    
+    btn.addEventListener('click', () => {
+        const isActive = item.classList.contains('active');
+        
+        // 如果想要點開一個就自動關閉其他，可以把這段解除註解：
+        /*
+        faqItems.forEach(otherItem => {
+            otherItem.classList.remove('active');
+            otherItem.querySelector('.faq-content').style.maxHeight = null;
+        });
+        */
+        
+        if (!isActive) {
+            item.classList.add('active');
+            content.style.maxHeight = content.scrollHeight + "px";
+        } else {
+            item.classList.remove('active');
+            content.style.maxHeight = null;
+        }
+    });
+});
+
+// --- 6. 頂部滾動進度條與進場動畫 ---
+window.addEventListener('scroll', () => {
+    const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+    const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+    const scrolled = (winScroll / height) * 100;
+    document.getElementById('scroll-progress').style.width = scrolled + "%";
+});
+const reveals = document.querySelectorAll('.reveal');
+const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if(entry.isIntersecting) entry.target.classList.add('active');
+    });
+}, { threshold: 0.1 });
+reveals.forEach(r => revealObserver.observe(r));
+
+// --- 7. 霓虹音樂播放器與 Visualizer ---
 const audio = document.getElementById('player');
+const playBtn = document.getElementById('customPlayBtn');
+const playIcon = document.getElementById('playIcon');
+const pauseIcon = document.getElementById('pauseIcon');
+const progressBar = document.getElementById('progressBar');
+const progressFill = document.getElementById('progressFill');
+const timeDisplay = document.getElementById('timeDisplay');
+const playerCard = document.getElementById('player-card');
+
 const canvas = document.getElementById('visualizer');
 const ctx = canvas.getContext('2d');
 const container = document.getElementById('visualizer-container');
 
-let audioCtx;
-let analyser;
-let source;
-let isInitialized = false;
+let audioCtx, analyser, source, isInitialized = false;
 
-function resizeCanvas() {
-    canvas.width = container.clientWidth;
-    canvas.height = container.clientHeight;
+function formatTime(seconds) {
+    if (isNaN(seconds)) return "0:00";
+    const m = Math.floor(seconds / 60);
+    const s = Math.floor(seconds % 60);
+    return `${m}:${s < 10 ? '0' : ''}${s}`;
 }
-window.addEventListener('resize', resizeCanvas);
 
-audio.addEventListener('play', () => {
-    if (!isInitialized) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        analyser = audioCtx.createAnalyser();
-        source = audioCtx.createMediaElementSource(audio);
-        source.connect(analyser);
-        analyser.connect(audioCtx.destination);
-        analyser.fftSize = 128;
-        isInitialized = true;
-        resizeCanvas();
-        draw();
+playBtn.addEventListener('click', () => {
+    if (audio.paused) {
+        audio.play();
+        playIcon.style.display = 'none';
+        pauseIcon.style.display = 'block';
+        playBtn.classList.add('playing');
+        
+        if (!isInitialized) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            analyser = audioCtx.createAnalyser();
+            source = audioCtx.createMediaElementSource(audio);
+            source.connect(analyser);
+            analyser.connect(audioCtx.destination);
+            analyser.fftSize = 128;
+            isInitialized = true;
+            resizeCanvas();
+            drawVisualizer();
+        }
+    } else {
+        audio.pause();
+        playIcon.style.display = 'block';
+        pauseIcon.style.display = 'none';
+        playBtn.classList.remove('playing');
+        playerCard.style.boxShadow = '';
     }
 });
 
-function draw() {
-    requestAnimationFrame(draw);
+audio.addEventListener('timeupdate', () => {
+    const percent = (audio.currentTime / audio.duration) * 100;
+    progressFill.style.width = `${percent}%`;
+    timeDisplay.textContent = `${formatTime(audio.currentTime)} / ${formatTime(audio.duration)}`;
+});
+audio.addEventListener('loadedmetadata', () => { timeDisplay.textContent = `0:00 / ${formatTime(audio.duration)}`; });
+progressBar.addEventListener('click', (e) => {
+    const rect = progressBar.getBoundingClientRect();
+    const pos = (e.clientX - rect.left) / rect.width;
+    audio.currentTime = pos * audio.duration;
+});
+
+function resizeCanvas() { canvas.width = container.clientWidth; canvas.height = container.clientHeight; }
+window.addEventListener('resize', resizeCanvas);
+
+function drawVisualizer() {
+    requestAnimationFrame(drawVisualizer);
     if (!analyser) return;
 
     const bufferLength = analyser.frequencyBinCount;
@@ -325,12 +753,16 @@ function draw() {
     analyser.getByteFrequencyData(dataArray);
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
     const barWidth = (canvas.width / bufferLength) * 2;
-    let x = 0;
+    let x = 0; let sumFrequency = 0;
+
+    ctx.shadowBlur = 15;
+    ctx.shadowColor = '#4facfe';
 
     for (let i = 0; i < bufferLength; i++) {
-        const barHeight = (dataArray[i] / 255) * canvas.height * 0.85;
+        const value = dataArray[i];
+        sumFrequency += value;
+        const barHeight = (value / 255) * canvas.height * 0.85;
         
         const gradient = ctx.createLinearGradient(0, canvas.height, 0, canvas.height - barHeight);
         gradient.addColorStop(0, '#00f2fe');
@@ -338,12 +770,23 @@ function draw() {
         gradient.addColorStop(1, '#818cf8');
         
         ctx.fillStyle = gradient;
-        ctx.fillRect(x, canvas.height - barHeight, barWidth - 3, barHeight);
-        
+        if(ctx.roundRect) {
+            ctx.beginPath();
+            ctx.roundRect(x, canvas.height - barHeight, barWidth - 3, barHeight, [4, 4, 0, 0]);
+            ctx.fill();
+        } else {
+            ctx.fillRect(x, canvas.height - barHeight, barWidth - 3, barHeight);
+        }
         x += barWidth;
+    }
+
+    if (!audio.paused) {
+        const avgFrequency = sumFrequency / bufferLength;
+        const glowIntensity = (avgFrequency / 255) * 50; 
+        const opacity = (avgFrequency / 255) * 0.8;
+        playerCard.style.boxShadow = `0 10px 40px -10px rgba(0,0,0,0.5), 0 0 ${glowIntensity}px rgba(56, 189, 248, ${opacity}), inset 0 0 20px rgba(56, 189, 248, 0.1)`;
     }
 }
 </script>
 </body>
-
 </html>
